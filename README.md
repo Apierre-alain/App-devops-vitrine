@@ -1,36 +1,47 @@
-# 🚀 App DevOps — Stack Full-Stack orchestrée
+# App DevOps — Stack Full-Stack
 
-Projet full-stack moderne avec **React** (frontend), **Node/Express** (backend), **MongoDB** (base de données) et **Nginx** (reverse proxy). Tout dans Docker ! 🐳
+Ce dépôt est un projet vitrine d'une architecture full-stack / DevOps. Projet d'apprentissage, assisté par IA pour la documentation et le debugging. Si cela ressemble à du code fait par IA, c'est elle qui à corrigé mes erreur.
+
+Application full-stack moderne avec React (frontend), Node/Express (backend), MongoDB (base de données) et Nginx (reverse proxy). Déployée avec Docker et Docker Compose.
 
 ---
 
-## ⚡ Démarrage en 1 minute
+## Prérequis
+
+- Docker ([installer ici](https://www.docker.com/products/docker-desktop))
+- docker-compose (généralement inclus avec Docker Desktop)
+
+Node, npm, MongoDB, etc. sont conteneurisés et inclus dans ce projet.
+
+---
+
+## Démarrage
 
 ```bash
 docker-compose up -d --build
 ```
 
-**Puis accédez à :**
+Accédez à l'application via :
 - App web : http://localhost
 - API : http://localhost/api
 - Health check : http://localhost/health
 
-C'est tout ! Attendez 30-60 sec au premier démarrage. 🎯
+Le démarrage initial peut prendre 30-60 secondes.
 
 ---
 
-## 📁 Structure du projet
+## Structure du projet
 
 ```
 app-devops/
-├── docker-compose.yaml      # Orchestre tous les services
+├── docker-compose.yaml      # Orchestration des services
 ├── backend/                 # API Node/Express
-│   ├── .env.example        # Modèle de configuration
-│   ├── Dockerfile          # Conteneur backend
-│   └── src/                # Code source
-├── frontend/               # App React
-│   ├── Dockerfile          # Conteneur frontend
-│   └── src/                # Composants React
+│   ├── .env.example        # Template de configuration
+│   ├── Dockerfile
+│   └── src/
+├── frontend/               # Application React
+│   ├── Dockerfile
+│   └── src/
 └── nginx/                  # Reverse proxy
     ├── Dockerfile
     └── nginx.conf
@@ -38,99 +49,85 @@ app-devops/
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────┐
-│   Client    │
-│  (Browser)  │
-└──────┬──────┘
-       │ :80
-       ↓
-┌─────────────────────────────────────┐
-│        NGINX (Reverse Proxy)        │
-│  - Route /     → Frontend            │
-│  - Route /api  → Backend             │
-│  - Route /health → Backend health    │
-└──────┬──────────────────┬────────────┘
-       ↓                  ↓
-   ┌────────────┐    ┌──────────────┐
-   │  Frontend  │    │   Backend    │
-   │  (React)   │    │ (Express)    │
-   └────────────┘    └──────┬───────┘
-                            ↓
-                     ┌──────────────┐
-                     │   MongoDB    │
-                     │  (Database)  │
-                     └──────────────┘
+Client (Browser)
+    ↓ :80
+    ↓
+NGINX (Reverse Proxy)
+├─ Route /     → Frontend (React)
+├─ Route /api  → Backend (Express)
+└─ Route /health → Backend health endpoint
+    ↓                  ↓
+Frontend           Backend
+(React)            (Express)
+                       ↓
+                   MongoDB
 ```
 
 ---
 
-## 🛠️ Commandes essentielles
+## Commandes
 
-### 📊 Voir les logs
+### Afficher les logs
 ```bash
 docker-compose logs -f               # Tous
 docker-compose logs -f backend       # Backend uniquement
 docker-compose logs -f mongodb       # MongoDB uniquement
 ```
 
-### 🔄 Redémarrer un service
+### Redémarrer un service
 ```bash
-docker-compose restart backend       # Restart backend
-docker-compose restart frontend      # Restart frontend
+docker-compose restart backend
+docker-compose restart frontend
 ```
 
-### 🛑 Arrêter
+### Arrêter les services
 ```bash
-docker-compose down                  # Arrête tout
-docker-compose down -v               # Arrête + efface les data
+docker-compose down                  # Arrête tous les services
+docker-compose down -v               # Arrête et supprime les volumes
 ```
 
-### 🔨 Rebuild un service
+### Reconstruction d'un service
 ```bash
-docker-compose up -d --build backend # Rebuild backend seulement
+docker-compose up -d --build backend
 ```
 
 ---
 
-## 🔐 Variables d'environnement
+## Variables d'environnement
 
-### Le système `.env` expliqué
+### Système .env
 
-| Fichier | Où ? | Poussé sur Git ? | Rôle |
-|---------|------|------------------|------|
-| `.env.example` | `backend/` | ✅ Oui | Modèle / documentation |
-| `.env` | `backend/` | ❌ Non (`.gitignore`) | Valeurs réelles (secrets) |
+| Fichier | Localisation | Git | Rôle |
+|---------|------|------|------|
+| `.env.example` | `backend/` | Poussé | Template de configuration |
+| `.env` | `backend/` | Ignoré (.gitignore) | Variables de production/secrets |
 
-### Comment ça marche
+### Fonctionnement
 
-1. **Quand tu pushes** = Seul `.env.example` est envoyé (pas de secrets exposés)
-2. **Build du Docker** = Si `.env` n'existe pas, Docker le crée depuis `.env.example`
-3. **Pour toi en local** = Tu peux éventuellement modifier `backend/.env` sans que Git la force
+- `.env.example` est poussé sur le dépôt (pas de secrets)
+- Au build Docker, si `.env` n'existe pas, il est créé depuis `.env.example`
+- Vous pouvez personnaliser `backend/.env` localement sans impact sur Git
 
-### Modifier les variables
+### Configuration disponible
 
 ```bash
-# Pour voir/modifier les valeurs
 cat backend/.env.example
-
-# Pour les changer localement
-nano backend/.env  # ou ton éditeur préféré
 ```
 
-**Valeurs par défaut** (`backend/.env.example`) :
-- `MONGODB_URI` → Base de données locale (`mongodb://...`)
-- `JWT_SECRET` → Clé de signature des tokens
-- `NODE_ENV` → Mode `production`
-- `PORT_BACKEND` → Port 3000 (interne au conteneur)
+Variables configurées par défaut :
+- `MONGODB_URI` - Connexion MongoDB locale
+- `JWT_SECRET` - Clé de signature des tokens
+- `NODE_ENV` - Mode d'exécution (production)
+- `PORT_BACKEND` - Port interne du backend (3000)
 
 ---
 
-## 💻 Développement local (sans Docker)
+## Développement local (sans Docker)
 
-Si tu préfères développer sans Docker :
+Pour développer sans conteneurs, vous avez besoin de Node.js et npm installés localement.
 
 ### Backend
 ```bash
@@ -139,50 +136,53 @@ npm install
 npm start
 ```
 
-### Frontend (nouveau terminal)
+### Frontend
 ```bash
 cd frontend
 npm install
 npm start
 ```
 
-**⚠️ Notes** :
-- Le backend a besoin de MongoDB (configure `MONGODB_URI` dans `.env`)
-- Le frontend sera sur http://localhost:3000
-- L'API sera sur http://localhost:5000
+Configuration requise :
+- Le backend a besoin d'une instance MongoDB (configurer `MONGODB_URI` dans `.env`)
+- Frontend : http://localhost:3000
+- API Backend : http://localhost:5000
 
 ---
 
-## ❓ FAQ / Troubleshooting
+## Dépannage
 
-**"Les services ne démarrent pas"**
+**Services qui ne démarrent pas**
 ```bash
-docker-compose logs          # Voir les erreurs
-docker-compose down -v       # Nettoyer
+docker-compose logs          # Consulter les erreurs
+docker-compose down -v       # Nettoyer tous les volumes
 docker-compose up -d --build # Relancer
 ```
 
-**"Port 80 déjà utilisé"**
-- Modifier le port dans `docker-compose.yaml` : `"8080:80"` au lieu de `"80:80"`
+**Port 80 déjà utilisé**
+Modifier le port dans `docker-compose.yaml` :
+```yaml
+ports:
+  - "8080:80"  # Utiliser le port 8080 à la place de 80
+```
 
-**"MongoDB ne se connecte pas"**
-- Attendre ~30 sec au premier démarrage (MongoDB initialise la base)
+**Connexion MongoDB impossible**
+- MongoDB initialise la base au premier démarrage (peut prendre 30 secondes)
 - Vérifier : `docker-compose logs mongodb`
 
-**"Je veux accéder à MongoDB directement"**
+**Accès direct à MongoDB**
 ```bash
-# Via le conteneur
 docker exec -it mongodb mongosh -u admin -p password123
 ```
 
 ---
 
-## 📦 Stack technique
+## Stack technique
 
 - **Frontend** : React 19, React Router, Axios
-- **Backend** : Express 5, Mongoose, JWT, Winston logs
+- **Backend** : Express 5, Mongoose, JWT, Winston
 - **Database** : MongoDB
 - **Proxy** : Nginx
-- **Container** : Docker & Docker Compose
+- **Infrastructure** : Docker, Docker Compose
 
 ---
