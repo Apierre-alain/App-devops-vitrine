@@ -14,7 +14,9 @@ WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
 
-COPY .env .
+COPY .env* ./
+
+RUN if [ ! -f .env ]; then cp .env.example .env || true; fi
 
 COPY . .
 
@@ -22,6 +24,6 @@ EXPOSE 3000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
 
 CMD ["npm", "start"]

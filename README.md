@@ -10,94 +10,79 @@ Ce dépôt contient une application composée de trois parties : un **frontend**
 - `backend/` — code serveur (port 5000)
 - `nginx/` — `Dockerfile` et `nginx.conf` pour le reverse proxy
 
-## Prérequis
-- `Docker` (recommandé >= 20.10)
-- `docker-compose` (recommandé >= 1.29)
-- Pour le développement sans conteneur : `node` et `npm`/`yarn` (versions selon `package.json`)
+## 🚀 Démarrage très simple
 
-## Variables d'environnement (exemple)
-Le `backend` attend typiquement des variables d'environnement. Vérifiez `backend/config/database.js` pour les noms exacts. Exemples fréquents :
-- `DATABASE_URL` — URL de connexion à la base de données
-- `JWT_SECRET` — clé secrète pour les tokens
-- `PORT` — port d'écoute (optionnel, le conteneur configure généralement 5000)
+### Prérequis
+- `Docker` et `docker-compose` (les seuls prérequis!)
 
-Créez un fichier `.env` à la racine du `backend` si nécessaire, ou définissez ces variables dans votre environnement ou votre orchestrateur.
-
-## Quick Start (local, Docker)
-1. Construire et démarrer tous les services :
+### Lancer le projet en une seule commande :
 
 ```bash
 docker-compose up -d --build
 ```
 
-2. Voir les logs d'un service (ex. `nginx`) :
+C'est tout ! ✨ Attendez 30-60 secondes que les services démarrent, puis accédez à :
+- **Application** : http://localhost
+- **API** : http://localhost/api
+- **Santé** : http://localhost/health
 
-```bash
-docker-compose logs -f nginx
+## Architecture
+```
+Client
+  ↓ (port 80)
+Nginx (reverse proxy)
+  ├→ Frontend (React build static)
+  └→ Backend API
+        ↓
+    MongoDB (persistance)
 ```
 
-3. Redémarrer un service (ex. `nginx`) :
+## Commandes utiles
 
+### Voir les logs
 ```bash
-docker-compose restart nginx
+docker-compose logs -f              # Tous les services
+docker-compose logs -f backend      # Seulement le backend
+docker-compose logs -f mongodb      # Seulement MongoDB
 ```
 
-4. Arrêter et supprimer les conteneurs :
+### Redémarrer un service
+```bash
+docker-compose restart backend
+```
 
+### Arrêter tout
 ```bash
 docker-compose down
 ```
 
-## Points d'accès
-- Application (frontend) : http://localhost
-- API (reverse proxy) : http://localhost/api
-- Health check : http://localhost/health
+### Arrêter et supprimer les données
+```bash
+docker-compose down -v
+```
+
+## Variables d'environnement
+Toutes les variables sont configurées automatiquement. Le fichier `.env` est **ignoré par Git** pour la sécurité (contient des secrets).
+
+**Pour développer localement** :
+1. Copier le template : `cp backend/.env.example backend/.env`
+2. Éditer si nécessaire : `backend/.env`
+
+**En production** : Utilise les variables du `docker-compose.yaml` (surcharge les `.env`)
 
 ## Développement sans Docker (optionnel)
-Si vous préférez lancer les services localement sans conteneurs :
+Si vous préférez développer sans conteneurs :
 
 ```bash
-# Frontend
-cd frontend
-npm install
-npm start
-
 # Backend
 cd backend
 npm install
 npm start
-```
 
-Vérifiez `frontend/package.json` et `backend/package.json` pour les scripts exacts.
-
-## Dépannage rapide
-- Lister les conteneurs en fonctionnement :
-
-```bash
-docker ps
-```
-
-- Voir les logs du backend :
-
-```bash
-docker-compose logs -f backend
-```
-
-- Rebuild d'un service :
-
-```bash
-docker-compose up -d --build backend
-```
-
-Si un service ne répond pas, commencez par vérifier ses logs et l'état du conteneur.
-
-## Personnalisation Nginx
-Pour modifier la configuration Nginx : éditez `nginx/nginx.conf`, puis :
-
-```bash
-docker-compose build nginx
-docker-compose up -d nginx
-```
+# Frontend (nouveau terminal)
+cd frontend
+npm install
+npm start
 
 ## Contact / Licence
 Ajoutez ici les informations de contact ou la licence du projet si nécessaire.
